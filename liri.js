@@ -35,6 +35,8 @@ switch (command) {
 };
 
 function concert(search) {
+
+
     var queryUrl = "https://rest.bandsintown.com/artists/" + search + "/events?app_id=codingbootcamp";
     
     axios.get(queryUrl).then(function(response) {
@@ -43,18 +45,17 @@ function concert(search) {
                     var venue = response.data[i].venue.name;
                     var location = response.data[i].venue.city;
                     var state = response.data[i].venue.region;
-                    var date = response.data[0].datetime;
+                    var date = response.data[i].datetime;
                     var dateSplit = date.split("T");
 
-                    console.log("Venue: " + venue + "\n" 
+                    console.log("\n---------------------------------------------\n"
+                    + "Venue: " + venue + "\n" 
                     + "Location: " + location + "," + state + "\n" 
-                    + "Date: " + moment(dateSplit[0], "MM/DD/YYYY") + "\n"
-                    + "-------------------------------------------------")
-                }
+                    + "Date: " + dateSplit[0]+ "\n"
+                    + "-------------------------------------------------");
 
-                if (!response) {
-                    console.log("I Can't find the song you are looking for. Try this song instead!");
-                }
+                }  
+              
          
         })
         .catch(function(error) {
@@ -63,6 +64,10 @@ function concert(search) {
 };
 
 function spotifyThis(search) {
+
+    if(!search){
+        spotifyFail();
+    } else {
     spotify.search({type: "track", query: search}).then(
         function(response) {
             for (var i = 0; i < 5; i++){
@@ -78,29 +83,58 @@ function spotifyThis(search) {
     }).catch(function(error){
         console.log(error);
     });
+}
 
-};
+}
+
+function spotifyFail () {
+    spotify.search({type: "track", query: "the sign"})
+    .then(function(response) {
+            console.log("\n!!!!!!!You did not search any songs.. then Try this one!!!!!!!!!!\n")
+            var jsonData = response.tracks;
+            console.log("\n--------------------------------------------\n")
+            console.log("Artist: " + jsonData.items[3].artists[0].name);
+            console.log("Song: " + jsonData.items[3].name);
+            console.log("Album: " + jsonData.items[3].album.name);
+            console.log("Preview Link: " + jsonData.items[3].preview_url);
+            console.log("\n--------------------------------------------\n")
+         
+    }).catch(function(error){
+        console.log(error);
+    });
+}
 
 function movie(search){
+    
+    if(!search) {
+        search = "Mr.Nobody"
+        console.log("!!!!!!!If you haven't watched Mr. Nobody, then you should!!!!!!!")
+    } 
     var url = "http://www.omdbapi.com/?t=" + search + "&y=&plot=short&apikey=trilogy";
     axios.get(url).then(
         function(respond) {
-            
+                
+                console.log("\n------------------------------------\n")
                 console.log("Movie: " + respond.data.Title);
                 console.log("Year: " + respond.data.Year);
                 console.log("IMDB Ratings: " + respond.data.Ratings[0].Value);
+                if (respond.data.Ratings[1] === undefined) {
+                    console.log("Rotten Tomatoes Ratings: N/A")
+                }else {
                 console.log("Rotten Tomatoes Ratings: " + respond.data.Ratings[1].Value);
+                }
                 console.log("Country: " + respond.data.Country);
                 console.log("Language: " + respond.data.Language);
                 console.log("Plot: " + respond.data.Plot);
                 console.log("Actors: " + respond.data.Actors);
+                console.log("\n---------------------------------------\n")
            
         }).catch(function(error){
             console.log(error);
         });
 };
 
-function doThis(value) {
+function doThis() {
     fs.readFile("random.txt", "utf8", function(error, data) {
         if (error) {
             return console.log(error);
@@ -110,3 +144,9 @@ function doThis(value) {
         console.log(data);
     })
 }
+
+fs.appendFile("log.txt", command + ": " + search + "\n-------------\n", function(err) {
+    if(err) {
+        return console.log(err)
+    }
+});
