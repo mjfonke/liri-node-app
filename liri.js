@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-var keys = require.apply("./keys.js");
+var keys = require("./keys.js");
 
 var Spotify = require("node-spotify-api");
 
@@ -13,7 +13,7 @@ var axios = require("axios");
 var fs = require("fs");
 
 var command = process.argv[2];
-var search = process.argv[3];
+var search = process.argv.slice(3).join(" ");
 
 
 switch (command) {
@@ -22,7 +22,7 @@ switch (command) {
         break;
 
     case "spotify-this-song":
-        spotify(search);
+        spotifyThis(search);
         break;
 
     case "movie-this":
@@ -39,8 +39,6 @@ function concert(search) {
     
     axios.get(queryUrl).then(function(response) {
 
-                console.log(response)
-
                 for (var i = 0; i < response.data.length; i++){
                     var venue = response.data[i].venue.name;
                     var location = response.data[i].venue.city;
@@ -50,8 +48,12 @@ function concert(search) {
 
                     console.log("Venue: " + venue + "\n" 
                     + "Location: " + location + "," + state + "\n" 
-                    + "Date: " + moment(dateSplit[0], MM/DD/YYYY) + "\n"
+                    + "Date: " + moment(dateSplit[0], "MM/DD/YYYY") + "\n"
                     + "-------------------------------------------------")
+                }
+
+                if (!response) {
+                    console.log("I Can't find the song you are looking for. Try this song instead!");
                 }
          
         })
@@ -60,15 +62,19 @@ function concert(search) {
         })
 };
 
-function spotify(search) {
+function spotifyThis(search) {
     spotify.search({type: "track", query: search}).then(
         function(response) {
-            for (var i = 0; i < 6; i++){
-            console.log(response.track.items[i].artists[0].name);
-            console.log(response.tracks.items[i].name);
-            console.log(response.tracks.items[i].album.name);
-            console.log(response.tracks.items[i].preview_url);
-        }
+            for (var i = 0; i < 5; i++){
+            var jsonData = response.tracks;
+            console.log("\n--------------------------------------------\n")
+            console.log("Artist: " + jsonData.items[i].artists[0].name);
+            console.log("Song: " + jsonData.items[i].name);
+            console.log("Album: " + jsonData.items[i].album.name);
+            console.log("Preview Link: " + jsonData.items[i].preview_url);
+            console.log("\n--------------------------------------------\n")
+            }
+        
     }).catch(function(error){
         console.log(error);
     });
@@ -80,14 +86,14 @@ function movie(search){
     axios.get(url).then(
         function(respond) {
             
-                console.log("Movie: " + respond.Title);
-                console.log("Year: " + respond.Year);
-                console.log("IMDB Ratings: " + respond.Ratings[0].Value);
-                console.log("Rotten Tomatoes Ratings: " + respond.Ratings[1].Value);
-                console.log("Country: " + respond.Country);
-                console.log("Language: " + respond.Language);
-                console.log("Plot: " + respond.Plot);
-                console.log("Actors: " + respond.Actors);
+                console.log("Movie: " + respond.data.Title);
+                console.log("Year: " + respond.data.Year);
+                console.log("IMDB Ratings: " + respond.data.Ratings[0].Value);
+                console.log("Rotten Tomatoes Ratings: " + respond.data.Ratings[1].Value);
+                console.log("Country: " + respond.data.Country);
+                console.log("Language: " + respond.data.Language);
+                console.log("Plot: " + respond.data.Plot);
+                console.log("Actors: " + respond.data.Actors);
            
         }).catch(function(error){
             console.log(error);
